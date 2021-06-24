@@ -60,4 +60,23 @@ public class SQLFunction {
         }
         return n;
     }
+
+    static int HasInserted() throws ClassNotFoundException, SQLException { //判断当日是否已经插入初始数据
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        String url = "jdbc:mysql://localhost:3306/SmartController";
+        Connection conn = DriverManager.getConnection(url, "root", "123456");
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        String ddate = dateFormat.format(calendar.getTime());
+        int n=-1;
+        try (PreparedStatement ps= conn.prepareStatement("select count(*) from Daily where DDate=?")){
+            ps.setObject(1,ddate);
+            try(ResultSet rs=ps.executeQuery()){
+                while(rs.next()){
+                    n=rs.getInt("count(*)");
+                }
+            }
+        }
+        return n;
+    }
 }

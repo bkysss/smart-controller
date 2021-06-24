@@ -30,8 +30,9 @@ public class test {
 
     public static void main(String[] args) throws Exception {
         List<String> ipList=List.of("192.168.154.133","127.0.0.1");
-
-        for (String ip:ipList) {
+        List<String> nifNameList=List.of("vmnet0");
+        if(SQLFunction.HasInserted()==nifNameList.size()){
+            for (String name:nifNameList) {
 //            Thread t=new Thread(()->{
 //                try {
 //
@@ -39,8 +40,11 @@ public class test {
 //                    e.printStackTrace();
 //                }
 //            });
-            Loop.HandlePackets(InetAddress.getByName(ip));
+                //Loop.HandlePackets(InetAddress.getByName(ip));
+                Loop.HandlePackets(name);
+            }
         }
+
 
     }
 

@@ -80,4 +80,57 @@ public class Loop {
         handle.close();
     }
 
+    public static void HandlePackets(String nifName) throws Exception{
+
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        String url="jdbc:mysql://localhost:3306/SmartController";
+
+        // 设置要抓包的网卡
+        PcapNetworkInterface nif=Pcaps.getDevByName(nifName);
+        // 实例化一个捕获报文的对象 设置报文参数：长度，混杂模式，超时时间
+        final PcapHandle handle = nif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS,READ_TIMEOUT);
+
+        PacketListener listener= packet -> {
+            try {
+                InetAddress srcIpAddr,dstIpAddr;
+                if(packet.contains(IpPacket.class)){
+                    srcIpAddr=packet.get(IpPacket.class).getHeader().getSrcAddr();
+                    dstIpAddr=packet.get(IpPacket.class).getHeader().getDstAddr();
+                }
+                else {
+                    srcIpAddr=null;
+                    dstIpAddr=null;
+                }
+
+                if(srcIpAddr!=null && dstIpAddr!=null){
+
+                    //if(srcIpAddr!=ip){
+                        String srcIp=(srcIpAddr==null) ? "" : srcIpAddr.toString().substring(1);
+                        String dstIp=(dstIpAddr==null) ? "" : dstIpAddr.toString().substring(1);
+                        if(!srcIp.contains("192.168")){
+                            SQLFunction.UpdateDaily(srcIp,dstIp);
+                        }
+
+                    //}
+
+                }
+
+            } catch (Exception throwables) {
+                throwables.printStackTrace();
+            }
+        };
+        try {
+            // 直接使用loop无限循环处理包
+            handle.loop(-1,listener); //设置抓包个数  当个数为-1时无限抓包
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        handle.close();
+    } //根据网卡名抓包
+
+
+
+
+
 }
